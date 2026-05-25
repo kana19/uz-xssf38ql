@@ -1,0 +1,521 @@
+/* ============================================================
+   monthly.css — iPad 月次管理ページ（売上・コスト統合）
+   ------------------------------------------------------------
+   左カラム＝月次集計（科目別集計＝アコーディオン＋統合一覧）
+   右カラム＝新規追加（売上／コスト タブ切替・フォームは sales/cost.js 流用）
+   設計指針（02_画面仕様.md §2-2・00_原則.md §5-9）：
+   - 見出しは店舗ロゴと同じ高さで一直線・フォントはホームに合わせ小さめ・下線なし
+   - 左のプルダウン帯を右の売上/コストタブ帯と同じ高さに揃える
+   - 縦線は左右カラム境界のみ・以降は横線と余白で構成
+   - 余白を均一にし縦横のズレをなくす／配色はモノトーン濃淡のみ
+   - スマホ流用フォームを iPad 幅に最適化し縦の冗長を圧縮
+   - 科目選択時は選択1枚を上部固定・「変更」ボタンで選び直し
+   全て body.is-ipad[data-page="monthly"] スコープ。スマホ・他ページ非影響。
+   ============================================================ */
+
+/* ── 2カラム本体：ヘッダー無しのため全高 ───────────────── */
+body.is-ipad[data-page="monthly"] .ipad-sc-wrap {
+  height: 100dvh;
+  grid-template-columns: 1.15fr 1fr;
+}
+body.is-ipad[data-page="monthly"] .ipad-sc-left,
+body.is-ipad[data-page="monthly"] .ipad-sc-right {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+body.is-ipad[data-page="monthly"] .ipad-sc-left {
+  border-right: 1px solid var(--uz-border);
+}
+
+/* ── カラム見出し（ロゴと一直線・小さめ・下線なし） ─────── */
+body.is-ipad[data-page="monthly"] .mo-col-head {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--uz-text2);
+  flex: 0 0 auto;
+}
+
+/* ── 左：フィルタバー（右のタブ帯と同じ高さに揃える） ──── */
+body.is-ipad[data-page="monthly"] .ipad-filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 45px;
+  padding: 0 22px;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--uz-border);
+}
+body.is-ipad[data-page="monthly"] .ipad-filter-select {
+  flex: 1;
+  height: 34px;
+  font-size: 13px;
+}
+
+/* ── 右：タブ帯も同じ45px帯に揃える ────────────────────── */
+body.is-ipad[data-page="monthly"] .ipad-input-tabs {
+  flex: 0 0 auto;
+  height: 45px;
+}
+body.is-ipad[data-page="monthly"] .ipad-tab {
+  padding: 0;
+  height: 45px;
+}
+
+/* ── 左：科目別集計（アコーディオン） ──────────────────── */
+body.is-ipad[data-page="monthly"] .mo-breakdown {
+  padding: 8px 22px;
+  flex: 0 0 auto;
+  max-height: 38vh;
+  overflow-y: auto;
+}
+body.is-ipad[data-page="monthly"] .mo-bd-group {
+  border-bottom: 1px solid var(--uz-border);
+}
+body.is-ipad[data-page="monthly"] .mo-bd-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 2px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--uz-text);
+  text-align: left;
+}
+body.is-ipad[data-page="monthly"] .mo-bd-head[disabled] { cursor: default; opacity: .55; }
+body.is-ipad[data-page="monthly"] .mo-bd-caret {
+  font-size: 10px;
+  color: var(--uz-text2);
+  width: 12px;
+  flex: 0 0 auto;
+}
+body.is-ipad[data-page="monthly"] .mo-bd-label { flex: 1; }
+body.is-ipad[data-page="monthly"] .mo-bd-total { font-variant-numeric: tabular-nums; }
+body.is-ipad[data-page="monthly"] .mo-bd-body { padding: 0 0 10px; }
+body.is-ipad[data-page="monthly"] .mo-bd-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0 6px 22px;
+  font-size: 13px;
+  color: var(--uz-text2);
+}
+body.is-ipad[data-page="monthly"] .mo-bd-row--empty { color: var(--uz-text-muted); }
+body.is-ipad[data-page="monthly"] .mo-bd-amt {
+  font-variant-numeric: tabular-nums;
+  color: var(--uz-text);
+}
+
+/* ── 左：統合一覧テーブル（列詰め・見出し中央・横線のみ） ─ */
+body.is-ipad[data-page="monthly"] .mo-list-wrap {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 16px 24px;
+  border-top: 1px solid var(--uz-border);
+}
+body.is-ipad[data-page="monthly"] .mo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+}
+body.is-ipad[data-page="monthly"] .mo-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--uz-surface);
+  text-align: center;
+  font-weight: 600;
+  color: var(--uz-text-muted);
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--uz-border);
+  white-space: nowrap;
+}
+/* 列幅配分：適用・メモを広く確保 */
+body.is-ipad[data-page="monthly"] .mo-th-date   { width: 13%; }
+body.is-ipad[data-page="monthly"] .mo-th-kind   { width: 14%; }
+body.is-ipad[data-page="monthly"] .mo-th-item   { width: 22%; }
+body.is-ipad[data-page="monthly"] .mo-th-memo   { width: 21%; }
+body.is-ipad[data-page="monthly"] .mo-th-amount { width: 16%; }
+body.is-ipad[data-page="monthly"] .mo-th-state  { width: 9%; }
+body.is-ipad[data-page="monthly"] .mo-th-edit   { width: 5%; }
+
+body.is-ipad[data-page="monthly"] .mo-row td {
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--uz-border);
+  color: var(--uz-text);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.is-ipad[data-page="monthly"] .mo-td-date   { text-align: center; color: var(--uz-text2); font-variant-numeric: tabular-nums; }
+body.is-ipad[data-page="monthly"] .mo-td-kind   { text-align: center; }
+body.is-ipad[data-page="monthly"] .mo-td-item   { font-weight: 600; }
+body.is-ipad[data-page="monthly"] .mo-td-memo   { color: var(--uz-text2); }
+body.is-ipad[data-page="monthly"] .mo-td-amount { text-align: right; font-variant-numeric: tabular-nums; }
+body.is-ipad[data-page="monthly"] .mo-td-state  { text-align: center; }
+
+/* 種別タグ：モノトーン濃淡のみ */
+body.is-ipad[data-page="monthly"] .mo-tag {
+  display: inline-block;
+  min-width: 52px;
+  text-align: center;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--uz-border);
+}
+body.is-ipad[data-page="monthly"] .mo-tag--sales    { background: var(--uz-text); color: var(--uz-on-accent, #fff); border-color: var(--uz-text); }
+body.is-ipad[data-page="monthly"] .mo-tag--purchase { background: var(--uz-surface); color: var(--uz-text); }
+body.is-ipad[data-page="monthly"] .mo-tag--sga      { background: var(--uz-bg); color: var(--uz-text2); }
+
+body.is-ipad[data-page="monthly"] .mo-state { font-size: 12px; color: var(--uz-text-muted); }
+body.is-ipad[data-page="monthly"] .mo-state--ar,
+body.is-ipad[data-page="monthly"] .mo-state--ap { color: var(--uz-text); font-weight: 600; }
+
+body.is-ipad[data-page="monthly"] .mo-empty {
+  text-align: center;
+  color: var(--uz-text-muted);
+  padding: 28px 0;
+  font-size: 14px;
+}
+
+/* ════════════ 右カラム：入力フォーム（iPad最適化） ════════════ */
+body.is-ipad[data-page="monthly"] .ipad-tab-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* ── 積層ステッパー：確定した項目を上部にブロックで積む ──
+   選んだものがそのまま上に残り、タップでその項目だけ再編集できる。 */
+body.is-ipad[data-page="monthly"] .mo-stack {
+  position: sticky;
+  top: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--uz-border);
+}
+body.is-ipad[data-page="monthly"] .mo-stack:empty { display: none; }
+body.is-ipad[data-page="monthly"] .mo-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 24px;
+  background: var(--uz-text);
+  color: var(--uz-on-accent, #fff);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+body.is-ipad[data-page="monthly"] .mo-chip-k {
+  font-size: 11px;
+  opacity: .65;
+  flex: 0 0 56px;
+}
+body.is-ipad[data-page="monthly"] .mo-chip-v {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+}
+body.is-ipad[data-page="monthly"] .mo-chip-edit {
+  font-size: 12px;
+  opacity: .8;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+/* ════════════ 自作入力フォーム（monthly専用UI） ════════════
+   OSキーボード・OSカレンダーを使わない自作UI。
+   確定ブロック（.mo-chip）は上で定義済み。以下はエディタ・カレンダー・
+   テンキー・カード・税チップ・tail。配色モノトーン（00§5-9）。 */
+
+body.is-ipad[data-page="monthly"] #mo-form-sales,
+body.is-ipad[data-page="monthly"] #mo-form-cost {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* エディタ領域 */
+body.is-ipad[data-page="monthly"] .mo-editor { padding: 16px 24px; }
+body.is-ipad[data-page="monthly"] .mo-ed-head {
+  font-size: 12px;
+  color: var(--uz-text-muted);
+  margin-bottom: 12px;
+}
+body.is-ipad[data-page="monthly"] .mo-ed-sub {
+  font-size: 12px;
+  color: var(--uz-text-muted);
+  margin: 18px 0 10px;
+}
+
+/* 区分タブ（仕入原価／販管費） */
+body.is-ipad[data-page="monthly"] .mo-divtabs {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px 0;
+}
+body.is-ipad[data-page="monthly"] .mo-divtab {
+  flex: 1;
+  height: 46px;
+  border: 1px solid var(--uz-border);
+  border-radius: 10px;
+  background: var(--uz-bg);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--uz-text);
+  cursor: pointer;
+}
+body.is-ipad[data-page="monthly"] .mo-divtab.is-active {
+  background: var(--uz-text);
+  color: var(--uz-on-accent, #fff);
+  border-color: var(--uz-text);
+}
+
+/* 科目カード：2列グリッド */
+body.is-ipad[data-page="monthly"] .mo-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+body.is-ipad[data-page="monthly"] .mo-card {
+  min-height: 56px;
+  padding: 14px;
+  border: 1px solid var(--uz-border);
+  border-radius: 12px;
+  background: var(--uz-bg);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--uz-text);
+  cursor: pointer;
+}
+body.is-ipad[data-page="monthly"] .mo-card.is-active {
+  background: var(--uz-text);
+  color: var(--uz-on-accent, #fff);
+  border-color: var(--uz-text);
+}
+
+/* 諸口名称 */
+body.is-ipad[data-page="monthly"] .mo-misc { margin-top: 14px; }
+body.is-ipad[data-page="monthly"] .mo-misc-label {
+  display: block;
+  font-size: 12px;
+  color: var(--uz-text-muted);
+  margin-bottom: 8px;
+}
+body.is-ipad[data-page="monthly"] .mo-misc-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--uz-border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--uz-bg);
+  color: var(--uz-text);
+}
+
+/* 税率チップ */
+body.is-ipad[data-page="monthly"] .mo-taxchips { display: flex; gap: 10px; }
+body.is-ipad[data-page="monthly"] .mo-taxchip {
+  flex: 1;
+  height: 46px;
+  border: 1px solid var(--uz-border);
+  border-radius: 10px;
+  background: var(--uz-bg);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--uz-text);
+  cursor: pointer;
+}
+body.is-ipad[data-page="monthly"] .mo-taxchip.is-active {
+  background: var(--uz-text);
+  color: var(--uz-on-accent, #fff);
+  border-color: var(--uz-text);
+}
+
+/* 金額表示＋自作テンキー */
+body.is-ipad[data-page="monthly"] .mo-amount-disp {
+  font-size: 38px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--uz-text);
+  font-variant-numeric: tabular-nums;
+  padding: 6px 4px;
+  border-bottom: 2px solid var(--uz-text);
+}
+body.is-ipad[data-page="monthly"] .mo-amount-yen {
+  font-size: 18px;
+  font-weight: 400;
+  margin-left: 6px;
+  color: var(--uz-text-muted);
+}
+body.is-ipad[data-page="monthly"] .mo-amount-tax {
+  font-size: 13px;
+  color: var(--uz-text-muted);
+  text-align: right;
+  margin: 8px 0 16px;
+}
+body.is-ipad[data-page="monthly"] .mo-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+body.is-ipad[data-page="monthly"] .mo-key {
+  height: 60px;
+  border: 1px solid var(--uz-border);
+  border-radius: 12px;
+  background: var(--uz-bg);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--uz-text);
+  cursor: pointer;
+}
+body.is-ipad[data-page="monthly"] .mo-key:active { background: var(--uz-surface); }
+body.is-ipad[data-page="monthly"] .mo-key--del,
+body.is-ipad[data-page="monthly"] .mo-key--clear {
+  font-size: 16px;
+  color: var(--uz-text-muted);
+}
+body.is-ipad[data-page="monthly"] .mo-key--clear { grid-column: span 3; }
+
+/* tail：状況トグル・メモ・登録 */
+body.is-ipad[data-page="monthly"] .mo-tail {
+  padding: 8px 24px 24px;
+  border-top: 1px solid var(--uz-border);
+  margin-top: 8px;
+}
+body.is-ipad[data-page="monthly"] .mo-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--uz-text);
+  padding: 12px 0;
+}
+body.is-ipad[data-page="monthly"] .mo-toggle input { width: 22px; height: 22px; }
+body.is-ipad[data-page="monthly"] .mo-memo-label {
+  display: block;
+  font-size: 12px;
+  color: var(--uz-text-muted);
+  margin: 8px 0;
+}
+body.is-ipad[data-page="monthly"] .mo-memo {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--uz-border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--uz-bg);
+  color: var(--uz-text);
+  resize: none;
+}
+body.is-ipad[data-page="monthly"] .mo-submit {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--uz-text);
+  color: var(--uz-on-accent, #fff);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.is-ipad[data-page="monthly"] .mo-submit:disabled { opacity: .5; }
+
+/* 自作カレンダー */
+body.is-ipad[data-page="monthly"] .mo-cal {
+  border: 1px solid var(--uz-border);
+  border-radius: 12px;
+  padding: 12px;
+}
+body.is-ipad[data-page="monthly"] .mo-cal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+body.is-ipad[data-page="monthly"] .mo-cal-title { font-size: 15px; font-weight: 700; color: var(--uz-text); }
+body.is-ipad[data-page="monthly"] .mo-cal-nav {
+  width: 40px; height: 40px;
+  border: 1px solid var(--uz-border);
+  border-radius: 10px;
+  background: var(--uz-bg);
+  font-size: 18px;
+  color: var(--uz-text);
+  cursor: pointer;
+}
+body.is-ipad[data-page="monthly"] .mo-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+body.is-ipad[data-page="monthly"] .mo-cal-dow {
+  text-align: center;
+  font-size: 11px;
+  color: var(--uz-text-muted);
+  padding: 4px 0;
+}
+body.is-ipad[data-page="monthly"] .mo-cal-cell {
+  aspect-ratio: 1 / 1;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--uz-text);
+  cursor: pointer;
+}
+body.is-ipad[data-page="monthly"] .mo-cal-cell.is-sel {
+  background: var(--uz-text);
+  color: var(--uz-on-accent, #fff);
+  font-weight: 700;
+}
+body.is-ipad[data-page="monthly"] .mo-cal-empty { cursor: default; }
+
+/* トースト（showToastが無い環境向けフォールバック） */
+.mo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  background: var(--uz-text);
+  color: var(--uz-on-accent, #fff);
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+  z-index: 100;
+}
+.mo-toast.show { opacity: 1; }
+
+body.is-ipad[data-page="monthly"] .submit-bar { display: none !important; }

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>月次管理 — ウルトラZAIMUくん</title>
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="css/forms.css">
+  <link rel="stylesheet" href="css/sheet-modal.css">
+  <link rel="stylesheet" href="css/sales-modal.css">
+  <link rel="stylesheet" href="css/cost-modal.css">
+  <link rel="stylesheet" href="css/ipad-input.css">
+  <link rel="stylesheet" href="css/monthly.css">
+</head>
+<body data-page="monthly">
+
+<!-- iPad サイドバーナビ（スマホでは非表示／中身は app.js uzRenderSidebar が生成） -->
+<nav class="nav-sidebar" id="nav-sidebar" data-active="monthly" aria-label="メインナビゲーション"></nav>
+
+<div class="page-wrapper">
+
+  <!-- iPad 月次管理パネル（戻るボタンなし・iPad のみ表示） -->
+  <div class="ipad-sc-wrap" id="ipad-sc-wrap">
+
+    <!-- ── 左カラム：月次集計（統合一覧＋集計） ── -->
+    <div class="ipad-sc-left">
+      <div class="mo-col-head">月次集計</div>
+
+      <div class="ipad-filter-bar">
+        <select id="mo-filter-month" class="ipad-filter-select" aria-label="表示月"></select>
+        <select id="mo-filter-kind" class="ipad-filter-select" aria-label="種別">
+          <option value="all">すべて</option>
+          <option value="sales">売上</option>
+          <option value="purchase">仕入原価</option>
+          <option value="sga">販管費</option>
+        </select>
+        <select id="mo-filter-state" class="ipad-filter-select" aria-label="状況">
+          <option value="all">状況すべて</option>
+          <option value="unpaid">売掛・買掛のみ</option>
+        </select>
+      </div>
+
+      <!-- 科目別集計（折りたたみなし・常時表示） -->
+      <div class="mo-breakdown" id="mo-breakdown"></div>
+
+      <!-- 統合一覧（売上・コスト混在） -->
+      <div class="mo-list-wrap">
+        <table class="mo-table">
+          <thead>
+            <tr>
+              <th class="mo-th-date">発生日</th>
+              <th class="mo-th-kind">種別</th>
+              <th class="mo-th-item">適用</th>
+              <th class="mo-th-memo">メモ</th>
+              <th class="mo-th-amount">金額</th>
+              <th class="mo-th-state">状況</th>
+              <th class="mo-th-edit"></th>
+            </tr>
+          </thead>
+          <tbody id="mo-tbody">
+            <tr><td colspan="7" class="mo-empty">読み込み中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /ipad-sc-left -->
+
+    <!-- ── 右カラム：新規追加（売上／コスト タブ切替） ── -->
+    <div class="ipad-sc-right">
+      <div class="mo-col-head">新規追加</div>
+
+      <div class="ipad-input-tabs">
+        <button class="ipad-tab ipad-tab--active" data-motab="sales" type="button">売上</button>
+        <button class="ipad-tab" data-motab="cost" type="button">コスト</button>
+      </div>
+
+      <!-- 売上入力フォーム（monthly.js が _buildSalesFormBodyHTML を注入） -->
+      <div id="mo-form-sales" class="ipad-tab-content"></div>
+
+      <!-- コスト入力フォーム（monthly.js が _smCostBuildFormBodyHTML を注入） -->
+      <div id="mo-form-cost" class="ipad-tab-content" style="display:none"></div>
+
+    </div><!-- /ipad-sc-right -->
+
+  </div><!-- /ipad-sc-wrap -->
+
+</div><!-- /page-wrapper -->
+
+<!-- ローディングオーバーレイ -->
+<div id="loading-overlay" class="loading-overlay" aria-hidden="true">
+  <div class="spinner"></div>
+</div>
+
+<!-- AIフック（フェーズ3用・削除禁止） -->
+<div id="receipt-capture-area" style="display:none"></div>
+<div id="csv-import-area"      style="display:none"></div>
+<div id="ai-suggestion-area"   style="display:none"></div>
+
+<script src="js/app.js"></script>
+<!-- 入力ロジックの正本（sales.js / cost.js）を流用。
+     monthly.js は両者の後に読み込み、_loadIpad*Data を月次統合再読込に差し替える。 -->
+<script src="js/sales.js"></script>
+<script src="js/cost.js"></script>
+<script src="js/monthly.js"></script>
+</body>
+</html>
